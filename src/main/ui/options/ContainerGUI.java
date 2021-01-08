@@ -1,6 +1,7 @@
 package ui.options;
 
 import model.Category;
+import model.CategoryContainer;
 import model.exceptions.NoTitleException;
 import persistence.JsonParser;
 import persistence.JsonSaver;
@@ -8,6 +9,8 @@ import ui.ToolsGUI;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 
 public abstract class ContainerGUI extends OptionsGUI {
 
@@ -81,8 +84,8 @@ public abstract class ContainerGUI extends OptionsGUI {
         JsonSaver jsonSaver = new JsonSaver(DESTINATION);
         try {
             jsonSaver.save(ctyc);
-        } catch (Exception e) {
-            new ErrorGUI("Error in saving files.", "Cannot save file.");
+        } catch (FileNotFoundException e) {
+            new ErrorGUI("Error: file " + DESTINATION + " could not be accessed!", "Cannot save file.");
             // e.printStackTrace();
         }
     }
@@ -94,7 +97,7 @@ public abstract class ContainerGUI extends OptionsGUI {
         JsonParser jsonParser = new JsonParser(DESTINATION);
         try {
             ctyc = jsonParser.parseFile();
-        } catch (Exception e) {
+        } catch (IOException | NoTitleException e) {
             new ErrorGUI("Error loading saved files. Creating default files.", "File load error");
             generateDefaultFiles();
             refresh();
@@ -105,16 +108,11 @@ public abstract class ContainerGUI extends OptionsGUI {
     // MODIFIES: this
     // EFFECTS: generates default files to save
     private void generateDefaultFiles() {
-        try {
-            Category cty = new Category("Untitled");
-            ctyc = new model.CategoryContainer();
-            cty.addNotes(toolsGUI.getNoteGUI().getNotePane());
-            ctyc.addCategory(cty);
-            saveCategoryContainer();
-        } catch (NoTitleException e) {
-            new ErrorGUI("This should never be thrown. Something has gone horribly wrong.", "Error");
-            e.printStackTrace();
-        }
+        Category cty = new Category("Untitled");
+        ctyc = new CategoryContainer();
+        cty.addNotes(toolsGUI.getNoteGUI().getNotePane());
+        ctyc.addCategory(cty);
+        saveCategoryContainer();
     }
 
     abstract void refresh();
